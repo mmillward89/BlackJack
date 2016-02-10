@@ -18,13 +18,13 @@ class PlayerBehaviour {
     boolean shouldPlayerDrawCard(PlayerType type, int playerValue) {
         //Assume checks for aces, bust and blackjack are done by game manager
 
-        if(playerValue < 10) {
+        if(playerValue < 11) {
             return true;  //Always hit if player can't go bust
         }
 
         switch(type) {
             case PLAYER:
-                return false; //Shouldn't use this for player
+                return false; //Shouldn't use this for player - throw exception?
 
             case SAFE:
                 return shouldSafePlayerDrawCard(playerValue);
@@ -64,10 +64,6 @@ class PlayerBehaviour {
         }
 
         return false;
-    }
-
-    boolean shouldAceCountAsEleven(int handValue) {
-        return handValue + 10 > 21;
     }
 
     double shouldPlayerBet(PlayerType type, ResultType lastResult, double min) {

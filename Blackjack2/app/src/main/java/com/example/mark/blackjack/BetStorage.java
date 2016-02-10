@@ -36,8 +36,7 @@ class BetStorage {
     }
 
     double calculateWinnings(PlayerType player, ResultType result) {
-        int number = player.getValue();
-        return valuesBet[number] * result.getValue(); //E.g. a win multiplies value bet by 2
+        return getPlayerBet(player) * result.getValue(); //E.g. a win multiplies value bet by 2
     }
 
     void clearBets() {

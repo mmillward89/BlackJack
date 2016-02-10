@@ -2,14 +2,4 @@ should player hit
 - take account of cards shown around table?
 - might have to adjust dependent on player performance, don't want them always 
 winning or losing
-
-methods to improve: should player hit, should player bet
-
-Record result as undecided if a player hasn't won or lost, then get the dealer's
-result, compare all undecided to it, then set that players result appropriately.
-
-After dealer turn, scorer is triggered by activity.
-
-Need to add checks for bust or 21 after a player hits
-
-Ensure deck is reset after each round, no zeroes in array
+- could also improve should player bet

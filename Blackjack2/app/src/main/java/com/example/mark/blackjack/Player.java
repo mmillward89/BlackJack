@@ -59,17 +59,17 @@ class Player {
         information.increaseAce();
     }
 
-    boolean shouldAceIncrease() {
-        if(information.playerHasAce()) {
-            return behaviour.shouldAceCountAsEleven(information.getPlayerValue());
-        }
-        return false; //Player doesn't have ace
-    }
-
     boolean wouldAceIncreaseEndTurn() {
         if(shouldAceIncrease()) {
             int tempValue = information.getPlayerValue() + 10;
             return !shouldPlayerDrawCard(tempValue); //Should player draw card with increased ace value
+        }
+        return false; //Player doesn't have ace/shouldn't increase ace
+    }
+
+    private boolean shouldAceIncrease() {
+        if(information.playerHasAce()) {
+            return (information.getPlayerValue() + 10) > 21;
         }
         return false; //Player doesn't have ace
     }

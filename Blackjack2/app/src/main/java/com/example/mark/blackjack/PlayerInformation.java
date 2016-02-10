@@ -51,8 +51,7 @@ class PlayerInformation {
         for(int i=0; i<playerHand.length; i++) {
             playerHand[i] = 0;
         }
-        playerValue = 0;
-        nextFreeHandSpace = 0;
+        playerValue = 0; nextFreeHandSpace = 0;
     }
 
     void increaseAce() {

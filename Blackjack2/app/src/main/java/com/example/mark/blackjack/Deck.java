@@ -19,6 +19,7 @@ class Deck {
         //Seperate method used to ensure there are no zeroes (cards considered in play)
         //when starting new game. Might need to reconfigure if initializing each time
         //is bad idea
+        hearts = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
         diamonds = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
         spades = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
         clubs = new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10};
