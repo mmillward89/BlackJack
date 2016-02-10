@@ -3,3 +3,25 @@ should player hit
 - might have to adjust dependent on player performance, don't want them always 
 winning or losing
 - could also improve should player bet
+
+NEXT
+- Look at setting up full/blank activity
+- Look at animation/graphic design possibilities
+- Need to communicate results to activity, another enum for animation types
+(draw card/bust etc.)?
+
+GAME STEPS
+- Pick high/med/low bet - set bet minimum appropriately
+- Ask for amount to bet (need to check this isn't too much)
+- Display cards and dealing animation (show one for dealer)
+- Show animation and make check as each player hits, stays, bust, blackjack etc.
+- React to hit/stay/quit buttons
+	- Hide buttons while AI plays
+- Show final result and money totals changing
+- Kick player from game if money = 0
+
+GRAPHICS/ANIMATIONS NEEDED
+- Cards, Numbers, Player Names, Table
+- Buttons, Option Popups
+- Cards dealt, actions (communicate hit/bust etc.), maybe money dealt
+- Sounds? Money, cards, maybe win/loss noises

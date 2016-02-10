@@ -5,23 +5,18 @@ package com.example.mark.blackjack;
  */
 
 class GameManager {
-
-    private Player[] players;
-    private Player currentPlayer, dealer;
-    private int round, playersGone;
-    private CardDealer cardDealer;
-    private BetStorage theBank;
+    private PlayerManager playerManager;
+    private Dealer dealer;
+    private int round, playersGone, numberOfPlayers;
     private ValueChecker valueChecker;
 
     public GameManager() {
         //initialize objects
-        players = new Player[3]; //Can change this if adding more players
-        cardDealer = new CardDealer();
-        theBank = new BetStorage();
+        playerManager = new PlayerManager();
+        numberOfPlayers = playerManager.getNumberofPlayers();
+        dealer = new Dealer();
         valueChecker = new ValueChecker();
         round = 0;
-
-        setPlayerInformation();
         startGame();
     }
 
@@ -30,51 +25,30 @@ class GameManager {
         dealCards(); //Ask for bet minimum then set bets through activity class
     }
 
-    void dealCards() {
-        setStartingPlayer(); //Determines next player to start game
-        cardDealer.shuffleDeck(); //Shuffling prepares deck for next round
-        for(int i=0; i<players.length; i++) {
-            players[i].addCard(cardDealer.drawCard());
-            players[i].addCard(cardDealer.drawCard());
+    private void dealCards() {
+        playerManager.setCurrentPlayer(round); //Determines next player to start game
+        dealer.shuffleDeck(); //Shuffling prepares deck for next round
+        for(int i=0; i<numberOfPlayers; i++) {
+            dealer.dealHand(playerManager.getPlayer(i));
         }
-        dealer.addCard(cardDealer.drawCard());
-        dealer.addCard(cardDealer.drawCard());
-    }
-
-    private void setStartingPlayer() {
-        //Round is tracked at end of each game to move first player to go
-        //around the table
-        currentPlayer = players[round];
-    }
-
-    private void setPlayerInformation() {
-        //Could edit this to a for loop and initialize by value
-        players[0] = new Player(PlayerType.PLAYER);
-        players[1] = new Player(PlayerType.SAFE);
-        players[2] = new Player(PlayerType.RISKY);
-        dealer = new Player(PlayerType.DEALER);
-
-        for(int i=0;i<players.length - 1;i++) {
-            players[i].editMoney(1000.00); //Start each player with 1000 cash, could make this user input
-        }
-
+        dealer.dealHand(playerManager.getDealer());
     }
 
     void setBetMinimum(int min) {
-        theBank.setMinBetValue(min); //This comes from user input
+        dealer.setMinBetValue(min); //This comes from user input
     }
 
     void setBets(double playerBet) {
         //Call this after input from player bet has been taken
-        for(int i=0; i<players.length; i++) {
-            Player player = players[i];
+        for(int i=0; i<numberOfPlayers; i++) {
+            Player player = playerManager.getPlayer(i);
 
             if(i==0) {
-                theBank.addInitialBet(playerBet, PlayerType.PLAYER); //Bet with user value
+                dealer.addInitialBet(playerBet, PlayerType.PLAYER); //Bet with user value
             } else {
                 //Gets the player's amount to bet by providing the min bet value and player type
                 //then adds this to the bank
-                theBank.addInitialBet(player.amountToBet(theBank.getMinBetValue()), player.getPlayerType());
+                dealer.addInitialBet(player.amountToBet(dealer.getMinBetValue()), player.getPlayerType());
             }
 
             player.editMoney(-playerBet);
@@ -82,36 +56,25 @@ class GameManager {
     }
 
     void Hit() {
-        currentPlayer.addCard(cardDealer.drawCard()); //Need to add checks for bust or 21 here or in activity
+        playerManager.getCurrentPlayer().addCard(dealer.drawCard()); //Need to add checks for bust or 21 here or in activity
     }
 
     void Stay() {
         playersGone++; //Another player has completed their turn
-        if(playersGone < players.length) {
-            nextCurrentPlayer();
-            if(currentPlayer.getPlayerType() != PlayerType.PLAYER) {
-                startAITurn(currentPlayer); //Need to grey out controls unless player is current player
+        if(playersGone < numberOfPlayers) {
+            //Need to use I or Z with current player value, bit convoluted
+            playerManager.nextCurrentPlayer(incrementOrZero(playerManager.getCurrentPlayerValue()));
+            if(playerManager.getCurrentPlayerType() != PlayerType.PLAYER) {
+                startAITurn(playerManager.getCurrentPlayer()); //Need to grey out controls unless player is current player
             }
         } else {
-            startAITurn(dealer);
+            startAITurn(playerManager.getDealer());
             startScorer();
         }
     }
 
     private boolean incrementOrZero(int value) {
-        return value++ < players.length;
-    }
-
-    private void nextCurrentPlayer() {
-        int currentPlayervalue = currentPlayer.getPlayerType().getValue();
-
-        //Determine if need to loop round to first player in array
-        //Last player to go is not always last player in the array
-        if(incrementOrZero(currentPlayervalue)) {
-            currentPlayer = players[currentPlayervalue++];
-        } else {
-            currentPlayer = players[0];
-        }
+        return value++ < numberOfPlayers;
     }
 
     private void startAITurn(Player player) {
@@ -127,7 +90,7 @@ class GameManager {
                 turnOver = true;
             } else {
                 if (player.shouldPlayerDrawCard(player.getHandValue())) {
-                    player.addCard(cardDealer.drawCard());
+                    player.addCard(dealer.drawCard());
                 } else {
                     turnOver = true; //Player has drawn all cards needed
                 }
@@ -161,10 +124,11 @@ class GameManager {
     void startScorer() {
         //No concern if a dealer wins or loses beyond the initial blackjack/bust confirmation
         //as the dealer's money doesn't change.
-        Player dealer = players[players.length-1];
-        for(int i=0; i<players.length; i++) {
-            if(players[i].getLastResult() == ResultType.UNDECIDED) {
-                players[i].setLastResult(Scorer.getResult(players[i], dealer));
+        Player dealer = playerManager.getDealer();
+        for(int i=0; i<numberOfPlayers; i++) {
+            Player player= playerManager.getPlayer(i);
+            if(player.getLastResult() == ResultType.UNDECIDED) {
+                player.setLastResult(Scorer.getResult(player, dealer));
             }
         }
 
@@ -173,25 +137,18 @@ class GameManager {
     }
 
     void confirmWinnings() {
-        for (int i=0; i<players.length; i++) {
-            Player player = players[i];
-            double winnings = theBank.calculateWinnings(player.getPlayerType(), player.getLastResult());
+        for (int i=0; i<numberOfPlayers; i++) {
+            Player player = playerManager.getPlayer(i);
+            double winnings = dealer.calculateWinnings(player.getPlayerType(), player.getLastResult());
             player.editMoney(winnings); //returns nothing if lost, double if won, etc.
         }
         prepareNewGame();
     }
 
     void prepareNewGame() {
-        clearHands(); //Empties player's hand and card value
-        theBank.clearBets(); //Clears values bet to zero
+        playerManager.clearHands(); //Empties player's hand and card value
+        dealer.clearBets(); //Clears values bet to zero
         round = incrementOrZero(round) ? round++ : 0;
         startGame();
-    }
-
-    private void clearHands() {
-        for(Player player: players) {
-            player.clearHand();
-        }
-        dealer.clearHand();
     }
 }
