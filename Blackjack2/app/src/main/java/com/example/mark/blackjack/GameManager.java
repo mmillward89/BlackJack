@@ -25,92 +25,125 @@ class GameManager {
         dealCards(); //Ask for bet minimum then set bets through activity class
     }
 
-    private void dealCards() {
+    Player[] dealCards() {
         playerManager.setCurrentPlayer(round); //Determines next player to start game
         dealer.shuffleDeck(); //Shuffling prepares deck for next round
-        for(int i=0; i<numberOfPlayers; i++) {
-            dealer.dealHand(playerManager.getPlayer(i));
-        }
-        dealer.dealHand(playerManager.getDealer());
+        return dealHands();
     }
 
-    void setBetMinimum(int min) {
+    private Player[] dealHands() {
+        Player[] players = new Player[numberOfPlayers + 1]; //return players and dealer
+
+        for(int i=0; i<numberOfPlayers; i++) {
+            players[i] = playerManager.getPlayer(i);
+            dealer.dealHand(players[i]);
+        }
+        players[numberOfPlayers] = playerManager.getDealer();
+        dealer.dealHand(players[numberOfPlayers]);
+        return players;
+    }
+
+    void setBetMinimum(double min) {
         dealer.setMinBetValue(min); //This comes from user input
     }
 
-    void setBets(double playerBet) {
+    double[] setBets(double playerBet) {
         //Call this after input from player bet has been taken
+
+        double[] bets = new double[numberOfPlayers]; //Returned to activity for display
         for(int i=0; i<numberOfPlayers; i++) {
             Player player = playerManager.getPlayer(i);
 
             if(i==0) {
                 dealer.addInitialBet(playerBet, PlayerType.PLAYER); //Bet with user value
+                bets[i] = playerBet;
             } else {
                 //Gets the player's amount to bet by providing the min bet value and player type
                 //then adds this to the bank
-                dealer.addInitialBet(player.amountToBet(dealer.getMinBetValue()), player.getPlayerType());
+                double amountToBet = player.amountToBet(dealer.getMinBetValue());
+                dealer.addInitialBet(amountToBet, player.getPlayerType());
+                bets[i] = amountToBet;
             }
 
             player.editMoney(-playerBet);
         }
+        return bets;
     }
 
-    void Hit() {
-        playerManager.getCurrentPlayer().addCard(dealer.drawCard()); //Need to add checks for bust or 21 here or in activity
+    Player getCurrentPlayer() {
+        return playerManager.getCurrentPlayer();
     }
 
-    void Stay() {
-        playersGone++; //Another player has completed their turn
-        if(playersGone < numberOfPlayers) {
-            //Need to use I or Z with current player value, bit convoluted
-            playerManager.nextCurrentPlayer(incrementOrZero(playerManager.getCurrentPlayerValue()));
-            if(playerManager.getCurrentPlayerType() != PlayerType.PLAYER) {
-                startAITurn(playerManager.getCurrentPlayer()); //Need to grey out controls unless player is current player
-            }
-        } else {
-            startAITurn(playerManager.getDealer());
-            startScorer();
+    int getNumberOfPlayers() {
+        return numberOfPlayers;
+    }
+
+    Player hit() {
+        Player player = playerManager.getCurrentPlayer();
+        player.addCard(dealer.drawCard());
+
+        if(hasPlayerBust(player)) {
+            player.setLastResult(ResultType.LOSS);
+            player.setResultBeforeDealer();
         }
+
+        if(doesPlayerHave21(player)) {
+            player.setLastResult(ResultType.BLACKJACK);
+            player.setResultBeforeDealer();
+        }
+
+        return player;
+    }
+
+    void stay() {
+        playersGone++;
+        playerManager.nextCurrentPlayer(incrementOrZero(playerManager.getCurrentPlayerValue()));
+    }
+
+    boolean nextPlayer() {
+        return playersGone < numberOfPlayers;
     }
 
     private boolean incrementOrZero(int value) {
         return value++ < numberOfPlayers;
     }
 
-    private void startAITurn(Player player) {
+    void startAITurn(Player player) {
         if(player.getPlayerType() == PlayerType.PLAYER) {
             //Display error - throw exception?
         }
 
-        boolean turnOver = false; boolean resultConfirmed = false;
+        boolean turnOver = false; boolean resultConfirmed = false; boolean aceIncreased = false;
 
         while(turnOver == false) {
             if (player.wouldAceIncreaseEndTurn()) {
-                player.increaseAce();
-                turnOver = true;
+                //No need to hit if increasing ace places hand value above stopping limit (17 most likely)
+                //This works on initial hand draw or after subsequent hits
+                player.increaseAce(); turnOver = true; aceIncreased = true;
             } else {
                 if (player.shouldPlayerDrawCard(player.getHandValue())) {
-                    player.addCard(dealer.drawCard());
+                    hit(); //Draws card and confirms if bust/blackjack
+                    if(player.getResultBeforeDealer()) {
+                        resultConfirmed = true; turnOver = true;
+                    }
                 } else {
                     turnOver = true; //Player has drawn all cards needed
                 }
-                if (hasPlayerBust(player)) {
-                    player.setLastResult(ResultType.LOSS);
-                    resultConfirmed = true; turnOver = true;
-                }
             }
-
-            if (resultConfirmed == false && doesPlayerHave21(player)) {
+            if(aceIncreased && doesPlayerHave21(player)) {
+                //Need to check if an increased ace leads to blackjack
                 player.setLastResult(ResultType.BLACKJACK);
                 resultConfirmed = true; turnOver = true;
+                player.setResultBeforeDealer();
             }
 
         }
+
         if(resultConfirmed == false) {
             player.setLastResult(ResultType.UNDECIDED);
         }
 
-        Stay();
+        stay();
     }
 
     boolean doesPlayerHave21(Player player) {

@@ -47,6 +47,10 @@ class Player {
         return information.getHand();
     }
 
+    int getHandSize() {
+        return information.getNextFreeHandSpace() - 1;
+    }
+
     void clearHand() {
         information.clearHand();
     }
@@ -57,6 +61,15 @@ class Player {
 
     void increaseAce() {
         information.increaseAce();
+    }
+
+    void setResultBeforeDealer() {
+        information.setResultBeforeDealer();
+    }
+
+
+    boolean getResultBeforeDealer() {
+        return information.getResultBeforeDealer();
     }
 
     boolean wouldAceIncreaseEndTurn() {

@@ -1,0 +1,21 @@
+NEXT
+- Step through game for communication between Activity/GM
+- Graphics/Animation: Android guide (canvas on view?), GIMP for art?, Alert 
+Dialogues 
+- Look for all error calls and anything else in the comments that needs 
+implementing
+- Fullscreen: Implement sticky, see article for potential additions
+	- Can't really look at this until I can properly test/emulate. OK to 
+leave and work on art, activity commands.
+
+GRAPHICS/ANIMATIONS NEEDED
+- Cards, Numbers, Player Names, Table
+- Buttons, Option Popups
+- Cards dealt, actions (communicate hit/bust etc.), maybe money dealt
+- Sounds? Money, cards, maybe win/loss noises
+
+THOUGHTS
+- For each player check that nextPlayer() exists. If player, stay button needs 
+to trigger next AI turn, else an AI turn needs to start.
+- Graphics/Information: Pick appropriate card based on value, send to direction 
+of screen based on PlayerType

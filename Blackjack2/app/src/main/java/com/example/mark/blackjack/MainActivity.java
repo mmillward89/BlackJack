@@ -12,7 +12,9 @@ import android.view.View;
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private GameManager gameManager;
+
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -106,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+
+        //Implement my stuff from here down
+        gameManager = new GameManager();
     }
 
     @Override
@@ -159,5 +164,56 @@ public class MainActivity extends AppCompatActivity {
     private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId()) {
+
+        }
+    }
+
+    void nextTurn(){
+        
+    }
+
+    void Hit() {
+        Player player = gameManager.hit();
+        int hand[] = player.getHand();
+
+        displayCard(player.getPlayerType(), hand[player.getHandSize()]);
+        if(player.getResultBeforeDealer()) {
+            //Trigger animation, end player turn
+        }
+    }
+
+    void Stay() {
+        gameManager.stay();
+        nextTurn();
+    }
+
+    void dealHands() {
+        Player[] playerValues = gameManager.dealCards();
+        for(int i=0; i<playerValues.length; i++) {
+            Player player = playerValues[i];
+            int[] hand = player.getHand();
+            for(int j=0; j<player.getHandSize(); j++) {
+                displayCard(player.getPlayerType(), hand[j]);
+            }
+        }
+    }
+
+    void setBetMinimum(double bet) {
+        gameManager.setBetMinimum(bet);
+    }
+
+    void setPlayerBet(double bet) {
+        double[] bets = gameManager.setBets(bet);
+        //Use for loop to set each view with number. Might need to runinUIthread()
+    }
+
+    void displayCard(PlayerType playerType, int cardValue) {
+        //Use information to get card with appropriate value and send in direction of
+        //appropriate player, triggering animation
     }
 }

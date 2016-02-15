@@ -1,0 +1,15 @@
+THOUGHTS
+should player hit 
+- take account of cards shown around table?
+- might have to adjust dependent on player performance, don't want them always 
+winning or losing
+- could also improve should player bet
+- option to keep betting consistent? avoid repeated popup questions
+
+VEGAS MODE
+- Drinking/Luck: As players drink, they bet more, but their odds improve (how? 
+More chances to draw the card they need?) Drink effect wears off over turns/
+drinking water.
+- Events: Picking fights, strippers, drugs(?), security, stag/hen nights
+- Card Counting/Multiple Decks: Check online for full 'vegas' rules, cc could 
+potentially allow player to do it, or opponent

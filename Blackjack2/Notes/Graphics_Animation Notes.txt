@@ -1,0 +1,13 @@
+- Extend View and define onDraw(). Called by Android framework to request view 
+draw itself. A Canvas object is passed, which you use within the method to 
+draw the object. 
+- Calling invalidate() on your view indicates you'd like your 
+view to be redrawn, and Android will call onDraw().
+- Inside onDraw(), use the Canvas to draw, using Canvas.draw...() methods, or 
+other class draw() methods that take the Canvas as an argument.
+- Use .png for drawables.
+
+- Drawable animations allow you to specify multiple drawables in an animation 
+xml, which can the be loaded and started in activity. Property seems more 
+complicated, as I'm using drawables, and not too many animations, could try it 
+for now.

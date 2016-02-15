@@ -10,12 +10,14 @@ class PlayerInformation {
     private int playerValue, nextFreeHandSpace;
     private double playerMoney;
     private PlayerType type;
+    private boolean resultBeforeDealer;
 
     PlayerInformation(PlayerType type) {
         playerValue = 0; nextFreeHandSpace = 0;
         playerMoney = 0.0;
         playerHand = new int[12];
         this.type = type;
+        resultBeforeDealer = false;
     }
 
     int getPlayerValue() {
@@ -47,16 +49,29 @@ class PlayerInformation {
         return playerHand;
     }
 
+    int getNextFreeHandSpace() {
+        return nextFreeHandSpace;
+    }
+
+    boolean getResultBeforeDealer() {
+        return resultBeforeDealer;
+    }
+
+    void setResultBeforeDealer() {
+        resultBeforeDealer = true;
+    }
+
     void clearHand() {
         for(int i=0; i<playerHand.length; i++) {
             playerHand[i] = 0;
         }
         playerValue = 0; nextFreeHandSpace = 0;
+        resultBeforeDealer = false;
     }
 
     void increaseAce() {
         boolean aceIncreased = false;
-        int i =0;
+        int i = 0;
 
         while(aceIncreased == false) {
             if(playerHand[i] == 1) {

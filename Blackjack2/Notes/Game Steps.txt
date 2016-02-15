@@ -1,0 +1,16 @@
+GAME STEPS
+- Pick high/med/low bet
+	- input for reference, call setBetMinimum()
+- Ask for amount to bet (need to check this isn't too much)
+	- call setBets(), pass results from BetStorage to display
+- Display cards and dealing animation (show one for dealer)
+	- dealCards(), pass results and playertype, trigger animations
+- Animation during AI turn for each hit, stay and result triggered
+	- Might need to refactor method to use hit/stay that player uses
+	- Hide buttons while AI plays
+- React to hit/stay/quit buttons
+	- Send similar response for hit/stay/result type
+- Show final result and money totals changing
+	- Send results from startScorer(), money from confirm Winnings() and 
+BetStorage
+- Kick player from game if money = 0
