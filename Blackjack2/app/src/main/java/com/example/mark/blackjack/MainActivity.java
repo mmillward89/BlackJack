@@ -172,32 +172,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     }
-
-    void nextTurn(){
-        
-    }
-
-    void Hit() {
-        Player player = gameManager.hit();
-        int hand[] = player.getHand();
-
-        displayCard(player.getPlayerType(), hand[player.getHandSize()]);
-        if(player.getResultBeforeDealer()) {
-            //Trigger animation, end player turn
-        }
-    }
-
-    void Stay() {
-        gameManager.stay();
-        nextTurn();
-    }
-
-    void dealHands() {
-        Player[] playerValues = gameManager.dealCards();
+	
+	void dealHands() {
+        Player[] playerValues = gameManager.dealCards(); //Returns all players with cards dealt
         for(int i=0; i<playerValues.length; i++) {
-            Player player = playerValues[i];
+            //Get each player's hand
+			Player player = playerValues[i];
             int[] hand = player.getHand();
-            for(int j=0; j<player.getHandSize(); j++) {
+            
+			//Display each card in their hand
+			for(int j=0; j<player.getHandSize(); j++) {
                 displayCard(player.getPlayerType(), hand[j]);
             }
         }
@@ -215,5 +199,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     void displayCard(PlayerType playerType, int cardValue) {
         //Use information to get card with appropriate value and send in direction of
         //appropriate player, triggering animation
+    }
+	
+	void nextTurn() {
+		if(gameManager.nextPlayer()) {
+			Player player = gameManager.getCurrentPlayer();
+			if(player.getPlayerType() != PlayerType.Player) {
+				nextAITurn(player);
+			} else {
+				//Make buttons available for player
+			}
+		} else {
+			dealerTurn();
+		}
+	}
+
+    void nextAITurn(Player player){
+        gameManager.startAITurn(player);
+		nextTurn();
+    }
+
+    void Hit() {
+        Player player = gameManager.hit();
+        int hand[] = player.getHand();
+		displayCard(player.getPlayerType(), hand[player.getHandSize()]);
+        
+		if(player.getResultBeforeDealer()) {
+            //Trigger animation
+			nextTurn();
+        }
+    }
+
+    void Stay() {
+        gameManager.stay();
+        nextTurn();
     }
 }

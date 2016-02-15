@@ -96,8 +96,10 @@ class GameManager {
     }
 
     void stay() {
-        playersGone++;
-        playerManager.nextCurrentPlayer(incrementOrZero(playerManager.getCurrentPlayerValue()));
+		playersGone++;
+		if(nextPlayer()) {
+			playerManager.nextCurrentPlayer(incrementOrZero(playerManager.getCurrentPlayerValue()));
+		}
     }
 
     boolean nextPlayer() {
