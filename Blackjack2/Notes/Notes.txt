@@ -1,5 +1,5 @@
 NEXT
-- Step through game for communication between Activity/GM
+- Unit test?
 - Graphics/Animation: Android guide (canvas on view?), GIMP for art?, Alert 
 Dialogues 
 - Look for all error calls and anything else in the comments that needs 

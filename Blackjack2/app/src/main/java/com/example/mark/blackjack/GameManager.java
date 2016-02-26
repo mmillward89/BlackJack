@@ -12,34 +12,31 @@ class GameManager {
 
     public GameManager() {
         //initialize objects
-        playerManager = new PlayerManager();
+        playerManager = new PlayerManager(3);
+		playerManager.initializePlayerMoney(1000.00);
         numberOfPlayers = playerManager.getNumberofPlayers();
-        dealer = new Dealer();
-        valueChecker = new ValueChecker();
-        round = 0;
-        startGame();
-    }
-
-    private void startGame() {
-        playersGone = 0;
-        dealCards(); //Ask for bet minimum then set bets through activity class
+        dealer = new Dealer(); //Deals cards and manages bank
+        valueChecker = new ValueChecker(); //Used to analyze player cards
+        round = 0; //Used so first player changes after each round
     }
 
     Player[] dealCards() {
-        playerManager.setCurrentPlayer(round); //Determines next player to start game
-        dealer.shuffleDeck(); //Shuffling prepares deck for next round
+        playersGone = 0; 
+		playerManager.setCurrentPlayer(round); //Determines next player to start game
+        dealer.shuffleDeck(); //Shuffling prepares deck for next round (might need to fix to avoid reinitializing each time)
         return dealHands();
     }
 
     private Player[] dealHands() {
-        Player[] players = new Player[numberOfPlayers + 1]; //return players and dealer
+        Player[] players = playerManager.getPlayers(); //return players and dealer
 
         for(int i=0; i<numberOfPlayers; i++) {
-            players[i] = playerManager.getPlayer(i);
             dealer.dealHand(players[i]);
         }
-        players[numberOfPlayers] = playerManager.getDealer();
-        dealer.dealHand(players[numberOfPlayers]);
+		//Seperate Player object represents dealer cards, Dealer class represents dealing cards and managing money
+		//Switch to Dealer class exclusively?
+        Player dealer1 = playerManager.getDealer();
+        dealer.dealHand(dealer1);
         return players;
     }
 
@@ -47,32 +44,30 @@ class GameManager {
         dealer.setMinBetValue(min); //This comes from user input
     }
 
-    double[] setBets(double playerBet) {
-        //Call this after input from player bet has been taken
-
-        double[] bets = new double[numberOfPlayers]; //Returned to activity for display
+    Player[] setBets(double amountToBet) {
+		Player[] players = playerManager.getPlayers();
         for(int i=0; i<numberOfPlayers; i++) {
-            Player player = playerManager.getPlayer(i);
-
-            if(i==0) {
-                dealer.addInitialBet(playerBet, PlayerType.PLAYER); //Bet with user value
-                bets[i] = playerBet;
-            } else {
-                //Gets the player's amount to bet by providing the min bet value and player type
-                //then adds this to the bank
-                double amountToBet = player.amountToBet(dealer.getMinBetValue());
-                dealer.addInitialBet(amountToBet, player.getPlayerType());
-                bets[i] = amountToBet;
-            }
-
-            player.editMoney(-playerBet);
+			Player player = players[i];
+            if(i!=0) {
+				amountToBet = player.amountToBet(dealer.getMinBetValue()); //Get AI value to bet
+			} 
+            dealer.addInitialBet(amountToBet, player.getPlayerType());
+			player.editMoney(-amountToBet); player.setLastBet(amountToBet);
         }
-        return bets;
+        return players;
     }
+	
+	Player[] getPlayers() {
+		return playerManager.getPlayers();
+	}
 
     Player getCurrentPlayer() {
         return playerManager.getCurrentPlayer();
     }
+	
+	Player getDealer() {
+		return playerManager.getDealer();
+	}
 
     int getNumberOfPlayers() {
         return numberOfPlayers;
@@ -82,6 +77,7 @@ class GameManager {
         Player player = playerManager.getCurrentPlayer();
         player.addCard(dealer.drawCard());
 
+		//setResultBeforeDealer() confirms a result was found before the dealer's turn
         if(hasPlayerBust(player)) {
             player.setLastResult(ResultType.LOSS);
             player.setResultBeforeDealer();
@@ -103,14 +99,21 @@ class GameManager {
     }
 
     boolean nextPlayer() {
-        return playersGone < numberOfPlayers;
+        return playersGone < numberOfPlayers; //pG increments after each player stays
     }
 
     private boolean incrementOrZero(int value) {
-        return value++ < numberOfPlayers;
+        return value++ < numberOfPlayers; //Confirms if all players have gone before dealer
     }
 
     void startAITurn(Player player) {
+		//Method Summary: 
+		//a) Starts a loop that checks if increasing an ace to 11 would end the turn positively (17-21 most likely) 
+		//b) hits if the player method determines it should, otherwise ending the loop 
+		//c) ends the loop if the hit causes bust/blackjack
+		//d) checks if an ace was increased and if that lead to blackjack
+		//e) sets the player result to undecided if it has yet to be confirmed (to be compared with dealer)
+		
         if(player.getPlayerType() == PlayerType.PLAYER) {
             //Display error - throw exception?
         }
@@ -119,26 +122,26 @@ class GameManager {
 
         while(turnOver == false) {
             if (player.wouldAceIncreaseEndTurn()) {
-                //No need to hit if increasing ace places hand value above stopping limit (17 most likely)
+                //Checks if increasing ace to 11 places total card value in 'safe' zone (likely 17+)
                 //This works on initial hand draw or after subsequent hits
-                player.increaseAce(); turnOver = true; aceIncreased = true;
-            } else {
-                if (player.shouldPlayerDrawCard(player.getHandValue())) {
-                    hit(); //Draws card and confirms if bust/blackjack
+                player.increaseAce(); turnOver = true; aceIncreased = true;            
+			} else {
+				if (player.shouldPlayerDrawCard(player.getHandValue())) {
+					hit(); //Draws card and confirms if bust/blackjack
                     if(player.getResultBeforeDealer()) {
-                        resultConfirmed = true; turnOver = true;
+                        resultConfirmed = true; turnOver = true; //Player has bust/blackjack
                     }
                 } else {
                     turnOver = true; //Player has drawn all cards needed
                 }
-            }
+			}
+			
             if(aceIncreased && doesPlayerHave21(player)) {
                 //Need to check if an increased ace leads to blackjack
                 player.setLastResult(ResultType.BLACKJACK);
                 resultConfirmed = true; turnOver = true;
                 player.setResultBeforeDealer();
             }
-
         }
 
         if(resultConfirmed == false) {
@@ -149,41 +152,39 @@ class GameManager {
     }
 
     boolean doesPlayerHave21(Player player) {
-        return valueChecker.doesPlayerHave21(player.getHand());
+        return valueChecker.doesPlayerHave21(player);
     }
 
     boolean hasPlayerBust(Player player) {
-        return valueChecker.hasPlayerBust(player.getHand());
+        return valueChecker.hasPlayerBust(player);
     }
 
-    void startScorer() {
-        //No concern if a dealer wins or loses beyond the initial blackjack/bust confirmation
-        //as the dealer's money doesn't change.
+    Player[] getScores() {
+		Player[] players = playerManager.getPlayers();
         Player dealer = playerManager.getDealer();
-        for(int i=0; i<numberOfPlayers; i++) {
-            Player player= playerManager.getPlayer(i);
+        
+		for(int i=0; i<numberOfPlayers; i++) {
+            Player player= players[i];
             if(player.getLastResult() == ResultType.UNDECIDED) {
-                player.setLastResult(Scorer.getResult(player, dealer));
+                player.setLastResult(Scorer.getResult(player, dealer)); 
             }
         }
-
-        confirmWinnings();
-        //Display Results
+		
+		return players;
     }
 
     void confirmWinnings() {
+		Player[] players = playerManager.getPlayers();
         for (int i=0; i<numberOfPlayers; i++) {
-            Player player = playerManager.getPlayer(i);
+			Player player = players[i];
             double winnings = dealer.calculateWinnings(player.getPlayerType(), player.getLastResult());
             player.editMoney(winnings); //returns nothing if lost, double if won, etc.
         }
-        prepareNewGame();
     }
 
     void prepareNewGame() {
-        playerManager.clearHands(); //Empties player's hand and card value
+        playerManager.clearHands(); //Resets player state, all cards and values removed
         dealer.clearBets(); //Clears values bet to zero
         round = incrementOrZero(round) ? round++ : 0;
-        startGame();
     }
 }

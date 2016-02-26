@@ -16,16 +16,15 @@ class PlayerBehaviour {
     }
 
     boolean shouldPlayerDrawCard(PlayerType type, int playerValue) {
-        //Assume checks for aces, bust and blackjack are done by game manager
-
+        //Assumes checks for aces, bust and blackjack are done elsewhere
+		//Methods used below are based on arbitrary decisions of what each player type would do
+		//Likely needs to be configured to optimize player performance and potentially remove
+		//hard coding of values
         if(playerValue < 11) {
             return true;  //Always hit if player can't go bust
         }
 
         switch(type) {
-            case PLAYER:
-                return false; //Shouldn't use this for player - throw exception?
-
             case SAFE:
                 return shouldSafePlayerDrawCard(playerValue);
 
@@ -34,7 +33,7 @@ class PlayerBehaviour {
 
             case DEALER:
                 if(playerValue < 17 ) {
-                    return true;
+                    return true; //Blackjack rules state dealer must hit below 17
                 }
                 return false;
         }
@@ -43,8 +42,8 @@ class PlayerBehaviour {
     }
 
     private boolean shouldRiskyPlayerDrawCard(int playerValue) {
-        if(playerValue < 13 && (r.nextInt(8) < 6)) {
-            return true; //75% hit rate on a low hand
+		if(playerValue < 13 && (r.nextInt(10) < 8)) {
+            return true; //80% hit rate on a low hand
         }
 
         if(playerValue < 17 && (r.nextInt(10) < 5)) {
@@ -67,29 +66,25 @@ class PlayerBehaviour {
     }
 
     double shouldPlayerBet(PlayerType type, ResultType lastResult, double min) {
-        switch(type) {
-            case PLAYER:
-                return 0.0; //Shouldn't use this with player
-
+        //Methods used below are based on arbitrary decisions of what each player type would do
+		//Likely needs to be configured to optimize player performance and potentially remove
+		//hard coding of values
+		switch(type) {
             case SAFE:
                 return shouldSafePlayerBet(min, didPlayerWinLast(lastResult));
 
             case RISKY:
                 return shouldRiskyPlayerBet(min, didPlayerWinLast(lastResult));
-
-            case DEALER:
-                return 0.0; //Dealer doesn't bet
         }
 
-        return min;//Shouldn't get here but just in case
+        return min; //Shouldn't get here but just in case
     }
 
     private double shouldSafePlayerBet(double min, boolean playerWonPreviously) {
         int i = r.nextInt(10);
 
-        if(playerWonPreviously) {
-
-            if(i<4) {
+		if(playerWonPreviously) {
+			if(i<4) {
                 return min;
             } else if(i<7) {
                 return min * 1.5;
@@ -113,7 +108,7 @@ class PlayerBehaviour {
 
     private double shouldRiskyPlayerBet(double min, boolean playerWonPreviously) {
         int i = r.nextInt(10);
-
+		
         if(playerWonPreviously) {
             if(i<2) {
                 return min;

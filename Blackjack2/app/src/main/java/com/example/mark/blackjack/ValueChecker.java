@@ -6,24 +6,9 @@ package com.example.mark.blackjack;
 
 class ValueChecker {
 
-    int getHandValue(int[] hand) {
-        int total = 0;
-
-        for(int i=0; i<hand.length; i++) {
-            if(hand[i] == 0) {
-                i = hand.length - 1;
-            } else {
-                total += hand[i]; //add value to total
-            }
-        }
-
-        return total;
-    }
-
-    boolean doesPlayerHave21(int[] hand) {
-        int handValue = getHandValue(hand);
-        if(!hasPlayerBust(hand)) {
-            return handValue == 21;
+    boolean doesPlayerHave21(Player player) {
+        if(!hasPlayerBust(player)) {
+            return player.getHandValue() == 21;
         }
         return false;
     }
@@ -43,7 +28,7 @@ class ValueChecker {
     }
 
     boolean hasPlayerBust(int[] hand) {
-        return getHandValue(hand) > 21;
+        return player.getHandValue() > 21;
     }
 }
 

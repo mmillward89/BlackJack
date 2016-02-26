@@ -5,6 +5,10 @@ should player hit
 winning or losing
 - could also improve should player bet
 - option to keep betting consistent? avoid repeated popup questions
+misc.
+- could rename resultBeforeDealer as dealer uses this too
+- add dealer Player object to Dealer class, it's currently seperate from players 
+in PlayerManager, might be doable and keeps things more logically organized
 
 VEGAS MODE
 - Drinking/Luck: As players drink, they bet more, but their odds improve (how? 

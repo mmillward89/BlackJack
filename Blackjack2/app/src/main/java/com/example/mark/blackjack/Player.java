@@ -22,6 +22,14 @@ class Player {
     void editMoney(double money) {
         information.editMoney(money);
     }
+	
+	void setLastBet(double bet) {
+		information.setLastBet(bet);
+	}
+	
+	double getLastBet() {
+		return information.getLastBet();
+	}
 
     void addCard(int card) {
         information.addCard(card);
@@ -48,6 +56,8 @@ class Player {
     }
 
     int getHandSize() {
+		//getHand().length returns 12, need to know how many cards are in hand
+		//rather than the size of array
         return information.getNextFreeHandSpace() - 1;
     }
 
@@ -74,7 +84,7 @@ class Player {
 
     boolean wouldAceIncreaseEndTurn() {
         if(shouldAceIncrease()) {
-            int tempValue = information.getPlayerValue() + 10;
+            int tempValue = information.getPlayerValue() + 10; //Check if increase would work before permanently increasing value
             return !shouldPlayerDrawCard(tempValue); //Should player draw card with increased ace value
         }
         return false; //Player doesn't have ace/shouldn't increase ace
@@ -82,7 +92,7 @@ class Player {
 
     private boolean shouldAceIncrease() {
         if(information.playerHasAce()) {
-            return (information.getPlayerValue() + 10) > 21;
+            return (information.getPlayerValue() + 10) > 21; //false if increase would cause bust
         }
         return false; //Player doesn't have ace
     }

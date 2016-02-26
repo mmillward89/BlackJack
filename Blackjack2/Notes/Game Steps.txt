@@ -6,8 +6,8 @@ GAME STEPS
 - Display cards and dealing animation (show one for dealer)
 	- dealCards(), pass results and playertype, trigger animations
 - Animation during AI turn for each hit, stay and result triggered
-	- Might need to refactor method to use hit/stay that player uses
 	- Hide buttons while AI plays
+	- Need to pass results to activity and animate
 - React to hit/stay/quit buttons
 	- Send similar response for hit/stay/result type
 - Show final result and money totals changing

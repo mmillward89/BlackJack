@@ -7,30 +7,36 @@ class PlayerManager {
     private Player[] players;
     private Player currentPlayer, dealer;
 
-    public PlayerManager() {
-        players = new Player[3]; //Can change this if adding more players
+    public PlayerManager(int numberOfPlayers) {
+        players = new Player[numberOfPlayers]; //Can change this if adding more players
 
         //Could edit this to a for loop and initialize by value
         players[0] = new Player(PlayerType.PLAYER);
         players[1] = new Player(PlayerType.SAFE);
         players[2] = new Player(PlayerType.RISKY);
         dealer = new Player(PlayerType.DEALER);
-
-        for(int i=0;i<players.length - 1;i++) {
-            players[i].editMoney(1000.00); //Start each player with 1000 cash, could make this user input
-        }
     }
+	
+	void initializePlayerMoney(double money) {
+		for(int i=0;i<players.length - 1;i++) {
+            players[i].editMoney(money); //Start each player with 1000 cash, could make this user input
+        }
+	}
 
     int getNumberofPlayers() {
         return players.length;
     }
+	
+	Player[] getPlayers() {
+		return players;
+	}
 
     Player getPlayer(int playerNumber) {
         return players[playerNumber];
     }
 
     Player getDealer() {
-        return players[players.length - 1];
+        return dealer;
     }
 
     Player getCurrentPlayer() {

@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //Implement my stuff from here down
         gameManager = new GameManager();
+		startGame();
     }
 
     @Override
@@ -173,7 +174,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 	
-	void dealHands() {
+	void Quit() {
+		//Implement, back to main menu/end activity
+	}
+	
+	void startGame() {
+		gameManager.prepareNewGame();
+		dealCards();
+		//Request bet here (setBetMinimum, setPlayerBet), give player ability to quit
+		//Use getMaxBetValue to ensure player bet doesn't exceed max bet value
+		gameLoop(); //After bets are set, game can start
+		//Play again button, if yes restart method
+	}
+	
+	void dealCards() {
         Player[] playerValues = gameManager.dealCards(); //Returns all players with cards dealt
         for(int i=0; i<playerValues.length; i++) {
             //Get each player's hand
@@ -192,8 +206,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     void setPlayerBet(double bet) {
-        double[] bets = gameManager.setBets(bet);
-        //Use for loop to set each view with number. Might need to runinUIthread()
+        Player[] playersWithBets = gameManager.setBets(bet); //Sets bets for all players
+        for(Player player: playersWithBets) {
+			animateMoney(player); //Edits displayed money values and animates bets
+		}
     }
 
     void displayCard(PlayerType playerType, int cardValue) {
@@ -201,27 +217,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //appropriate player, triggering animation
     }
 	
-	void nextTurn() {
-		if(gameManager.nextPlayer()) {
-			Player player = gameManager.getCurrentPlayer();
-			if(player.getPlayerType() != PlayerType.Player) {
-				nextAITurn(player);
-			} else {
-				//Make buttons available for player
-			}
-		} else {
-			dealerTurn();
+	void gameLoop() {
+		while(gameManager.nextPlayer()) {
+			nextTurn(); //Triggers player or AI turn
 		}
+		nextAITurn(gameManager.getDealer()); //Dealer has final turn
+		getResults(); //Round has ended, all player values recorded, need to compare all undecided to dealer		
+	}
+	
+	void nextTurn() {
+		Player player = gameManager.getCurrentPlayer();
+		if(player.getPlayerType() != PlayerType.Player) {				
+			nextAITurn(player)		
+		} else {
+			//Make buttons available for player
+		}	 
 	}
 
     void nextAITurn(Player player){
         gameManager.startAITurn(player);
-		nextTurn();
+		animateAICards(player);
+		if(player.getResultBeforeDealer() || player.getPlayerType() == PlayerType.DEALER) {
+			//Show results if confirmed before dealer turn, or if it is the dealer,
+			//as this signifies the round is ending
+			animateResults(player);
+		}
     }
+	
+	void getResults() {
+		Player[] players = gameManager.getScores();
+		for(Player player: players) {
+			animateResults(player);
+		}
+		gameManager.confirmWinnings();
+		Player[] players = gameManager.getPlayers();
+		for(Player player: players) {
+			animateMoney(player);
+		}
+	}
 
     void Hit() {
-        Player player = gameManager.hit();
-        int hand[] = player.getHand();
+        Player player = gameManager.hit(); 
+		int hand[] = player.getHand();
 		displayCard(player.getPlayerType(), hand[player.getHandSize()]);
         
 		if(player.getResultBeforeDealer()) {
@@ -231,7 +268,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     void Stay() {
+		Player player = gameManager.getCurrentPlayer();
+		animateCards(player);
+		if(player.getResultBeforeDealer()) {
+			animateResults(player);
+		}
         gameManager.stay();
         nextTurn();
     }
+	
+	void animateMoney(Player player) {
+		//Animate total change showing player bet subtracted from total
+	}
+	
+	void animateAICards(Player player) {
+		//Cards are displayed one by one for player in Hit()
+		if(player.getPlayerType() != PlayerType.PLAYER) {
+			int[] hand = player.getHand();
+			for(int i=2; i<player.getHandSize(); i++) {
+				//i starts at 2 to avoid initial hand dealt
+				displayCard(Player.getPlayerType(), hand[i])	
+			}
+		}
+	}
+	
+	void animateResults(Player player) {
+
+		switch(player.getLastResult()) {
+			case ResultType.BLACKJACK:
+				//Animate
+			break;
+			
+			case ResultType.LOSS:
+				//Animate
+			break;
+			
+			case: ResultType.UNDECIDED:
+				//Animate
+			break;
+			
+			case: ResultType.PUSH:
+				//Animate
+			break;
+			
+		}
+	}
+	
+	
 }

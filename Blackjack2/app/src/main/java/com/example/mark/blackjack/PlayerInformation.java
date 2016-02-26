@@ -8,14 +8,14 @@ class PlayerInformation {
 
     private int[] playerHand;
     private int playerValue, nextFreeHandSpace;
-    private double playerMoney;
+    private double playerMoney, lastBet;
     private PlayerType type;
     private boolean resultBeforeDealer;
 
     PlayerInformation(PlayerType type) {
         playerValue = 0; nextFreeHandSpace = 0;
-        playerMoney = 0.0;
-        playerHand = new int[12];
+        playerMoney = 0.0; lastBet = 0.0;
+        playerHand = new int[12]; //12 used as it's the maximum amount a hand can be without going bust (very unlikely though)
         this.type = type;
         resultBeforeDealer = false;
     }
@@ -42,12 +42,20 @@ class PlayerInformation {
                 return false; //No more cards to examine
             }
         }
-        return false; //If we get here player definitely doesn't have an ace
+        return false; //Shouldn't get here
     }
 
     int[] getHand() {
         return playerHand;
     }
+	
+	void setLastBet(double bet) {
+		lastBet = bet;
+	}
+	
+	double getLastBet() {
+		return lastBet;
+	}
 
     int getNextFreeHandSpace() {
         return nextFreeHandSpace;
